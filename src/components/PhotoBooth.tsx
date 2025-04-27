@@ -29,6 +29,8 @@ const PhotoBooth: React.FC = () => {
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const activeTabRef = useRef<HTMLButtonElement>(null);
 
   const handleCapture = (imageSrc: string) => {
     setCapturedImages(prev => [...prev, imageSrc]);
@@ -44,6 +46,31 @@ const PhotoBooth: React.FC = () => {
       facingMode: prev.facingMode === 'user' ? 'environment' : 'user'
     }));
   };
+
+  // Reset scroll position when changing tabs
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+    
+    // Scroll active tab into view when tab changes
+    if (activeTabRef.current) {
+      activeTabRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
+    }
+  }, [activeTab]);
+
+  // Cleanup media streams when component unmounts
+  useEffect(() => {
+    return () => {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const renderContent = () => {
     const content = (() => {
@@ -72,10 +99,11 @@ const PhotoBooth: React.FC = () => {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={handleSwitchCamera}
-                  className="bg-gray-800/50 hover:bg-gray-700/50 text-white p-3 rounded-full backdrop-blur-sm"
+                  className="bg-gray-800/50 hover:bg-gray-700/50 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm"
                   title="Switch Camera"
                 >
-                  <FlipHorizontal size={24} />
+                  <FlipHorizontal size={20} className="sm:hidden" />
+                  <FlipHorizontal size={24} className="hidden sm:block" />
                 </motion.button>
               </motion.div>
               <motion.div
@@ -86,7 +114,7 @@ const PhotoBooth: React.FC = () => {
                 <select
                   value={collageLayout}
                   onChange={(e) => setCollageLayout(e.target.value as CollageLayout)}
-                  className="bg-gray-800/50 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition-all duration-200 hover:bg-gray-700/50"
+                  className="bg-gray-800/50 text-white text-sm sm:text-base px-2 py-1 sm:px-4 sm:py-2 rounded-lg backdrop-blur-sm transition-all duration-200 hover:bg-gray-700/50"
                 >
                   <option value="single">Single Photo</option>
                   <option value="vertical-2">Vertical (2 Photos)</option>
@@ -126,17 +154,9 @@ const PhotoBooth: React.FC = () => {
     );
   };
 
-  useEffect(() => {
-    return () => {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, []);
-
   return (
     <div className="flex flex-col h-screen">
-      <main className="flex-grow relative overflow-hidden">
+      <main ref={contentRef} className="flex-grow relative overflow-y-auto">
         {renderContent()}
       </main>
 
@@ -144,51 +164,70 @@ const PhotoBooth: React.FC = () => {
         <motion.nav
           initial={{ y: 100 }}
           animate={{ y: 0 }}
-          className="bg-gray-800 p-4 flex justify-center items-center"
+          className="bg-gray-800 shadow-lg border-t border-gray-700"
         >
-          <div className="flex space-x-6 sm:space-x-8 md:space-x-12">
-            <NavButton
-              icon={<Home size={24} />}
-              label="Start"
-              active={activeTab === 'start'}
-              onClick={() => setActiveTab('start')}
-            />
-            <NavButton
-              icon={<Camera size={24} />}
-              label="Capture"
-              active={activeTab === 'camera'}
-              onClick={() => setActiveTab('camera')}
-            />
-            <NavButton
-              icon={<Settings size={24} />}
-              label="Settings"
-              active={activeTab === 'settings'}
-              onClick={() => setActiveTab('settings')}
-            />
-            <NavButton
-              icon={<Brush size={24} />}
-              label="Filters"
-              active={activeTab === 'filters'}
-              onClick={() => setActiveTab('filters')}
-            />
-            <NavButton
-              icon={<Sticker size={24} />}
-              label="Stickers"
-              active={activeTab === 'stickers'}
-              onClick={() => setActiveTab('stickers')}
-            />
-            <NavButton
-              icon={<MessageSquare size={24} />}
-              label="Messages"
-              active={activeTab === 'messages'}
-              onClick={() => setActiveTab('messages')}
-            />
-            <NavButton
-              icon={<ImageIcon size={24} />}
-              label="Gallery"
-              active={activeTab === 'gallery'}
-              onClick={() => setActiveTab('gallery')}
-            />
+          {/* Horizontal scrollable navigation with indicator arrows */}
+          <div className="relative">
+            {/* Scroll indicator - left */}
+            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-gray-800 to-transparent z-10 pointer-events-none" />
+            
+            {/* Navigation container - horizontally scrollable */}
+            <div className="flex overflow-x-auto py-3 px-4 hide-scrollbar">
+              <div className="flex space-x-4 sm:space-x-8 min-w-max mx-auto">
+                <NavButton
+                  icon={<Home size={18} />}
+                  label="Start"
+                  active={activeTab === 'start'}
+                  onClick={() => setActiveTab('start')}
+                  ref={activeTab === 'start' ? activeTabRef : null}
+                />
+                <NavButton
+                  icon={<Camera size={18} />}
+                  label="Capture"
+                  active={activeTab === 'camera'}
+                  onClick={() => setActiveTab('camera')}
+                  ref={activeTab === 'camera' ? activeTabRef : null}
+                />
+                <NavButton
+                  icon={<Settings size={18} />}
+                  label="Settings"
+                  active={activeTab === 'settings'}
+                  onClick={() => setActiveTab('settings')}
+                  ref={activeTab === 'settings' ? activeTabRef : null}
+                />
+                <NavButton
+                  icon={<Brush size={18} />}
+                  label="Filters"
+                  active={activeTab === 'filters'}
+                  onClick={() => setActiveTab('filters')}
+                  ref={activeTab === 'filters' ? activeTabRef : null}
+                />
+                <NavButton
+                  icon={<Sticker size={18} />}
+                  label="Stickers"
+                  active={activeTab === 'stickers'}
+                  onClick={() => setActiveTab('stickers')}
+                  ref={activeTab === 'stickers' ? activeTabRef : null}
+                />
+                <NavButton
+                  icon={<MessageSquare size={18} />}
+                  label="Messages"
+                  active={activeTab === 'messages'}
+                  onClick={() => setActiveTab('messages')}
+                  ref={activeTab === 'messages' ? activeTabRef : null}
+                />
+                <NavButton
+                  icon={<ImageIcon size={18} />}
+                  label="Gallery"
+                  active={activeTab === 'gallery'}
+                  onClick={() => setActiveTab('gallery')}
+                  ref={activeTab === 'gallery' ? activeTabRef : null}
+                />
+              </div>
+            </div>
+            
+            {/* Scroll indicator - right */}
+            <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-gray-800 to-transparent z-10 pointer-events-none" />
           </div>
         </motion.nav>
       )}
@@ -201,21 +240,28 @@ interface NavButtonProps {
   label: string;
   active: boolean;
   onClick: () => void;
+  ref?: React.RefObject<HTMLButtonElement> | null;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ icon, label, active, onClick }) => {
-  return (
-    <motion.button
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
-      className={`flex flex-col items-center transition-all duration-200 ${active ? 'text-blue-400 scale-110' : 'text-gray-400 hover:text-white'
+const NavButton = React.forwardRef<HTMLButtonElement, Omit<NavButtonProps, 'ref'>>(
+  ({ icon, label, active, onClick }, ref) => {
+    return (
+      <motion.button
+        ref={ref}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        className={`flex flex-col items-center justify-center w-16 sm:w-20 transition-all duration-200 ${
+          active ? 'text-blue-400' : 'text-gray-400 hover:text-white'
         }`}
-      onClick={onClick}
-    >
-      <div className="mb-1">{icon}</div>
-      <span className="text-xs font-medium">{label}</span>
-    </motion.button>
-  );
-};
+        onClick={onClick}
+      >
+        <div className="p-2 flex items-center justify-center">
+          {icon}
+        </div>
+        <span className="text-xs font-medium truncate w-full text-center">{label}</span>
+      </motion.button>
+    );
+  }
+);
 
 export default PhotoBooth;

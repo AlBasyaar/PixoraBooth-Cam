@@ -190,7 +190,7 @@ const PhotoBooth = () => {
           
           <div className="flex justify-center items-center text-gray-400 text-sm border-t border-gray-700 pt-4">
             <a 
-              href="https://github.com/AlBasyaar" 
+              href="https://github.com/AlBasyaar/PixoraBooth-Cam" 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center hover:text-white transition-colors"
