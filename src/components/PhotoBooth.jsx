@@ -158,31 +158,31 @@ const PhotoBooth = () => {
             />
             <NavButton 
               icon={<Settings size={24} />} 
-              label="Settings" 
+              label="Pengaturan" 
               active={activeTab === 'settings'} 
               onClick={() => setActiveTab('settings')} 
             />
             <NavButton 
               icon={<Brush size={24} />} 
-              label="Filters" 
+              label="Filter" 
               active={activeTab === 'filters'} 
               onClick={() => setActiveTab('filters')} 
             />
             <NavButton 
               icon={<Sticker size={24} />} 
-              label="Stickers" 
+              label="Sticker" 
               active={activeTab === 'stickers'} 
               onClick={() => setActiveTab('stickers')} 
             />
             <NavButton 
               icon={<MessageSquare size={24} />} 
-              label="Messages" 
+              label="Message" 
               active={activeTab === 'messages'} 
               onClick={() => setActiveTab('messages')} 
             />
             <NavButton 
               icon={<ImageIcon size={24} />} 
-              label="Gallery" 
+              label="Galleri" 
               active={activeTab === 'gallery'} 
               onClick={() => setActiveTab('gallery')} 
             />
